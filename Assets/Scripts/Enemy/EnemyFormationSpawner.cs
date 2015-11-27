@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class EnemySpawner : MonoBehaviour
+public class EnemyFormationSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private float width = 10f;
     [SerializeField] private float heigth = 5f;
     [SerializeField] private float paddind = 1f;
     [SerializeField] private float speed = 5f;
+    [SerializeField] private float spawnDelaySeconds = 1f;
 
     [SerializeField] private int direction = 1;
     [SerializeField] private float boundaryRightEdge;
@@ -19,12 +20,8 @@ public class EnemySpawner : MonoBehaviour
         float distance = transform.position.z - camera.transform.position.z;
         boundaryLeftEdge = camera.ViewportToWorldPoint(new Vector3(0, 0, distance)).x + paddind;
         boundaryRightEdge = camera.ViewportToWorldPoint(new Vector3(1, 1, distance)).x - paddind;
-
-        foreach (Transform child in transform)
-        {
-            GameObject enemy = Instantiate(enemyPrefab, child.transform.position, Quaternion.identity) as GameObject;
-            enemy.transform.parent = child;
-        }
+        EnemySpawner();
+       
     }
 
     void OnDrawGizmos()
@@ -57,5 +54,74 @@ public class EnemySpawner : MonoBehaviour
         }
 
         transform.position += new Vector3(direction * speed * Time.deltaTime, 0,0);
+
+        if (AllEnemiesDead())
+        {
+            SpawnUnitsFull();
+            //EnemySpawner();
+        }
+    }
+
+    //spawner unidade de enmy livremente
+    private void SpawnUnitsFull()
+    {
+        Transform freePos = nextFreePosition();
+        GameObject enemy = Instantiate(enemyPrefab, freePos.transform.position, Quaternion.identity) as GameObject;
+        enemy.transform.parent = freePos;
+
+        if (FreePositionExists())
+        {
+            Invoke("SpawnUnitsFull", spawnDelaySeconds);
+        }
+    }
+
+    // existe posicao livre
+    private bool FreePositionExists()
+    {
+        foreach (Transform position in transform)
+        {
+            if (position.childCount <= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // retorna a proxima posicao livre para o enemy
+    private Transform nextFreePosition()
+    {
+        foreach (Transform position in transform)
+        {
+            if (position.childCount <= 0)
+            {
+                return position;
+            }
+        }
+
+        return null;
+    }
+
+    private void EnemySpawner()
+    {
+        foreach (Transform child in transform)
+        {
+            GameObject enemy = Instantiate(enemyPrefab, child.transform.position, Quaternion.identity) as GameObject;
+            enemy.transform.parent = child;
+        }
+    }
+
+    private bool AllEnemiesDead()
+    {
+        foreach (Transform position in transform)
+        {
+            if (position.childCount > 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
