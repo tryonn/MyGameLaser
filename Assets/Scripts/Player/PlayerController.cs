@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private GameObject laserPrefabs;
     [SerializeField] private float projetilSpeed = 10f;
     [SerializeField] private float health = 150f;
+    [SerializeField] private AudioClip audioFire;
 
     private void Start()
     {
@@ -32,6 +33,7 @@ public class PlayerController : MonoBehaviour {
         Vector3 offset = new Vector3(0,1,0);
         GameObject myLaser = Instantiate(laserPrefabs, transform.position + offset, Quaternion.identity) as GameObject;
         myLaser.GetComponent<Rigidbody2D>().velocity = new Vector2(0, projetilSpeed);
+        AudioSource.PlayClipAtPoint(audioFire, transform.position);
     }
 
     private void CheckShoot()
